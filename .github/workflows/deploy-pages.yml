@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - refactor/vite-migration
+      - feature/add-credits
 
 permissions:
   contents: read
