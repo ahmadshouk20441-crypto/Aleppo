@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import vm from 'node:vm';
 
 /* يستخرج وسوم السكربت المسمّاة من ملف legacy ويقيّمها في Node كما هي،
    اعتمادًا على حارس module.exports الموجود أصلًا في map-logic. */
 export function loadLegacy() {
   const html = readFileSync(
-    new URL('../legacy/aleppo-transit-original.html', import.meta.url),
+    resolve(process.cwd(), 'legacy/aleppo-transit-original.html'),
     'utf8'
   );
   const grab = (id) => {

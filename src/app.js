@@ -4,6 +4,14 @@ import { roundedPath } from './core/geometry.js';
 import { buildRuns, runPoints } from './core/network.js';
 import { buildGraph, findRoute } from './core/routing.js';
 
+/* مصادر نصية لتوليد نسخة النشر المستقلة (بديل قراءة وسوم السكربت في النسخة الأحادية) */
+import cssText from './styles/main.css?raw';
+import textSrc from './core/text.js?raw';
+import geometrySrc from './core/geometry.js?raw';
+import networkSrc from './core/network.js?raw';
+import routingSrc from './core/routing.js?raw';
+import appSrc from './app.js?raw';
+
 /* ═══════════════════════════════════════════════════════════════
    التطبيق: الرسم والتفاعل + لوحة الأدمن
    ═══════════════════════════════════════════════════════════════ */
@@ -1162,11 +1170,15 @@ document.getElementById('copyBtn').onclick=()=>{
    تصدير نسخة النشر — ملف واحد مستقل
    (خريطة + جهاز بحث، من دون أدوات التعديل)
    ═══════════════════════════════════════════ */
+/* تجريد أسطر import/export كي تعمل الوحدات كسكربتات تقليدية في الملف المولّد */
+function stripESM(src){
+  return src.split('\n').filter(l=>!/^\s*(import |export \{)/.test(l)).join('\n');
+}
 function buildPublishHTML(){
-  const css=document.querySelector('style').textContent;
+  const css=cssText;
   const dataJS='const MAP_DATA = '+JSON.stringify(DATA)+';';
-  const logic=document.getElementById('map-logic').textContent;
-  const app=document.getElementById('map-app').textContent;
+  const logic=stripESM([textSrc,geometrySrc,networkSrc,routingSrc].join('\n'));
+  const app=stripESM(appSrc);
   const SC='<scr'+'ipt>', EC='</scr'+'ipt>';
   return '<!DOCTYPE html>\n<html lang="ar" dir="rtl">\n<head>\n'
     +'<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
