@@ -1,0 +1,24 @@
+{
+  "name": "aleppo-transit",
+  "private": true,
+  "version": "0.1.0",
+  "description": "خريطة النقل الداخلي لحلب — دليل تفاعلي",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:36603/git/ahmadshouk20441-crypto/Aleppo"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "happy-dom": "^20.10.2",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
+  }
+}

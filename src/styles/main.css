@@ -1,0 +1,407 @@
+/* ═══════════════════════════════════════════════════════════════
+   نظام التصميم — Aleppo Transit Design System
+   ═══════════════════════════════════════════════════════════════ */
+:root{
+  --ink:#1b2536;          /* الحبر الأساسي */
+  --ink-soft:#5b6578;
+  --canvas:#fafaf6;       /* خلفية الخريطة */
+  --paper:#ffffff;        /* خلفية البطاقات */
+  --edge:#e7e3d8;         /* حدود */
+  --gold:#c19a3d;         /* ذهب قلعة حلب */
+  --gold-deep:#a07f2c;
+  --head:#161f2e;         /* شريط العنوان */
+  --halo:#fafaf6;         /* هالة نصوص الخريطة */
+  --dim:.14;
+  --shadow:0 10px 30px rgba(27,37,54,.10);
+}
+body.dark{
+  --ink:#e8ecf4;
+  --ink-soft:#9aa5b8;
+  --canvas:#0f1521;
+  --paper:#171f2e;
+  --edge:#27324a;
+  --head:#0b101a;
+  --halo:#0f1521;
+  --shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+  background:var(--canvas);color:var(--ink);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:background .3s,color .3s;
+}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+
+/* ── الترويسة ───────────────────────────── */
+header.app{
+  background:var(--head);color:#f2f0e9;
+  padding:10px 22px 12px;
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  border-bottom:3px solid var(--gold);
+  position:relative;z-index:30;
+}
+header.app::after{ /* خط ذهبي مزدوج — لمسة حجر حلبي */
+  content:"";position:absolute;left:0;right:0;bottom:-7px;height:2px;
+  background:repeating-linear-gradient(90deg,var(--gold) 0 14px,transparent 14px 22px);
+  opacity:.5;pointer-events:none;
+}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.brand svg.citadel{flex:none;width:46px;height:40px;color:var(--gold)}
+.brand h1{
+  font-family:'Changa',sans-serif;font-weight:800;
+  font-size:clamp(19px,2.6vw,27px);line-height:1.15;letter-spacing:.2px;
+}
+.brand small{display:block;font-family:'IBM Plex Sans Arabic';font-weight:400;font-size:12px;color:#b8c0cf;margin-top:1px}
+.devchip{
+  font-size:11px;font-weight:600;color:var(--gold);
+  border:1px solid var(--gold);border-radius:99px;padding:2px 10px;white-space:nowrap;
+}
+.spacer{flex:1}
+.stats{display:flex;gap:14px;font-family:'Changa';font-weight:700;font-size:15px;color:#dfe4ee}
+.stats b{color:var(--gold);font-size:19px;margin-inline-end:4px}
+.hbtns{display:flex;gap:8px}
+.hbtn{
+  background:rgba(255,255,255,.08);color:#eef1f7;border:1px solid rgba(255,255,255,.18);
+  border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;gap:6px;transition:background .2s;
+}
+.hbtn:hover{background:rgba(255,255,255,.16)}
+.hbtn.active{background:var(--gold);border-color:var(--gold);color:#1d1709}
+.hbtn:disabled{opacity:.35;cursor:default}
+.hbtn:disabled:hover{background:rgba(255,255,255,.08)}
+
+/* ── الهيكل العام ───────────────────────── */
+main{flex:1;display:flex;min-height:0}
+aside.panel{
+  width:368px;flex:none;overflow-y:auto;padding:16px 16px 26px;
+  background:linear-gradient(180deg,var(--canvas),var(--canvas));
+  border-inline-start:1px solid var(--edge);
+  display:flex;flex-direction:column;gap:14px;
+  scrollbar-width:thin;
+}
+#mapwrap{flex:1;position:relative;min-width:0;background:var(--canvas)}
+#mapwrap svg#map{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#mapwrap.dragging svg#map{cursor:grabbing}
+#mapwrap.editing svg#map{cursor:default}
+
+/* ── البطاقات ──────────────────────────── */
+.card{
+  background:var(--paper);border:1px solid var(--edge);border-radius:16px;
+  padding:16px;box-shadow:var(--shadow);
+}
+.card h2{
+  font-family:'Changa';font-weight:700;font-size:17px;margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.card h2 .rule{flex:1;height:1px;background:var(--edge)}
+
+/* مخطط الرحلة */
+.field{position:relative;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.field .pt{
+  flex:none;width:30px;height:30px;border-radius:50%;
+  display:grid;place-items:center;font-family:'Changa';font-weight:800;font-size:15px;
+}
+.pt.a{background:var(--ink);color:var(--canvas)}
+.pt.b{background:var(--gold);color:#1d1709}
+.field input{
+  flex:1;border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);
+  border-radius:11px;padding:10px 12px;font-size:14px;outline:none;transition:border .2s;
+}
+.field input:focus{border-color:var(--gold)}
+.swaprow{display:flex;justify-content:center;margin:-4px 0 4px}
+.swap{
+  border:1px solid var(--edge);background:var(--paper);color:var(--ink-soft);
+  width:32px;height:32px;border-radius:50%;font-size:15px;line-height:1;
+  transition:transform .3s,color .2s;
+}
+.swap:hover{color:var(--gold);transform:rotate(180deg)}
+.gobtn{
+  width:100%;margin-top:6px;border:none;border-radius:12px;padding:12px;
+  background:var(--gold);color:#211a08;font-family:'Changa';font-weight:700;font-size:17px;
+  letter-spacing:.3px;transition:filter .2s;
+}
+.gobtn:hover{filter:brightness(1.07)}
+.clearbtn{
+  width:100%;margin-top:8px;border:none;background:none;color:var(--ink-soft);
+  font-size:12.5px;text-decoration:underline;display:none;
+}
+.clearbtn.show{display:block}
+
+/* القائمة المنسدلة للبحث */
+.dropdown{
+  position:absolute;top:calc(100% + 4px);right:40px;left:0;z-index:50;
+  background:var(--paper);border:1px solid var(--edge);border-radius:12px;
+  box-shadow:var(--shadow);max-height:240px;overflow-y:auto;display:none;
+}
+.dropdown.open{display:block}
+.dropdown .opt{
+  padding:9px 13px;font-size:13.5px;cursor:pointer;display:flex;align-items:center;gap:8px;
+}
+.dropdown .opt:hover,.dropdown .opt.hl{background:rgba(193,154,61,.13)}
+.dropdown .opt .dots{display:flex;gap:3px;margin-inline-start:auto}
+.dropdown .opt .dot{width:9px;height:9px;border-radius:50%}
+.dropdown .empty{padding:12px;font-size:13px;color:var(--ink-soft);text-align:center}
+
+/* ── تذكرة الرحلة (النتيجة) ─────────────── */
+.ticket{
+  background:var(--paper);border:1px solid var(--edge);border-radius:16px;
+  box-shadow:var(--shadow);overflow:hidden;animation:pop .35s ease;
+}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ticket .thead{
+  background:var(--head);color:#f0ede4;padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+}
+.ticket .thead .tt{font-family:'Changa';font-weight:700;font-size:16px}
+.ticket .thead .meta{margin-inline-start:auto;display:flex;gap:12px;font-size:12px;color:#c9d0dd}
+.ticket .thead .meta b{color:var(--gold);font-family:'Changa';font-size:16px}
+.ticket .perfo{ /* حافة مثقّبة كتذكرة الباص */
+  height:10px;
+  background:radial-gradient(circle at 10px 0px,var(--canvas) 5px,transparent 5.5px) repeat-x;
+  background-size:20px 10px;background-color:var(--head);
+}
+.ticket .legs{padding:14px 16px 6px}
+.leg{display:flex;gap:12px;position:relative;padding-bottom:16px}
+.leg .rail{flex:none;width:14px;display:flex;flex-direction:column;align-items:center}
+.leg .rail .lnode{width:14px;height:14px;border-radius:50%;border:3.5px solid var(--lc);background:var(--paper);flex:none}
+.leg .rail .lbar{flex:1;width:6px;background:var(--lc);border-radius:3px;margin:2px 0;min-height:26px}
+.leg .body{flex:1;min-width:0;padding-top:-2px}
+.leg .lname{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.leg .lname .badge{font-size:10.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:var(--lc);color:#fff}
+.leg .dirn{font-size:12.5px;color:var(--ink-soft);margin-top:3px;line-height:1.7}
+.leg details{margin-top:5px}
+.leg summary{font-size:11.5px;color:var(--gold-deep);cursor:pointer;user-select:none}
+body.dark .leg summary{color:var(--gold)}
+.leg .stopslist{font-size:11.5px;color:var(--ink-soft);line-height:2;padding:4px 8px 0}
+.transfer{
+  display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+  color:var(--ink-soft);padding:0 0 14px 0;margin-top:-6px;
+}
+.transfer .ticon{
+  width:22px;height:22px;border-radius:50%;background:var(--edge);
+  display:grid;place-items:center;font-size:12px;flex:none;margin-inline-start:-4px;
+}
+.endrow{display:flex;gap:12px;align-items:center;padding-bottom:14px}
+.endrow .enode{flex:none;width:14px;display:flex;justify-content:center}
+.endrow .pt{width:22px;height:22px;font-size:12px;margin-inline-start:-4px}
+.endrow .ename{font-weight:700;font-size:14px}
+.noroute{padding:16px;font-size:13.5px;color:var(--ink-soft);line-height:1.9}
+
+/* ── الخطوط (المفتاح) ──────────────────── */
+.seg{display:flex;background:var(--canvas);border:1px solid var(--edge);border-radius:10px;padding:3px;gap:3px;margin-inline-start:auto}
+.seg button{
+  border:none;background:none;color:var(--ink-soft);font-size:11.5px;font-weight:600;
+  padding:4px 10px;border-radius:7px;
+}
+.seg button.on{background:var(--gold);color:#211a08}
+.lines-list{display:flex;flex-direction:column;gap:4px}
+.linechip{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:11px;
+  border:1px solid transparent;cursor:pointer;transition:background .15s;
+  background:none;width:100%;text-align:start;color:var(--ink);
+}
+.linechip:hover{background:rgba(193,154,61,.09)}
+.linechip.on{border-color:var(--gold);background:rgba(193,154,61,.13)}
+.linechip.hidden{display:none}
+.linechip .sw{flex:none;width:26px;height:10px;border-radius:6px}
+.linechip .nm{font-size:13.5px;font-weight:600;flex:1}
+.linechip .ty{font-size:10px;font-weight:600;color:var(--ink-soft);border:1px solid var(--edge);border-radius:99px;padding:1px 8px}
+.linechip .ct{font-size:11px;color:var(--ink-soft)}
+
+/* تفاصيل الخط */
+#lineDetail .lstops{display:flex;flex-direction:column;margin-top:4px}
+#lineDetail .lstop{
+  display:flex;align-items:center;gap:10px;padding:4px 2px;font-size:13px;cursor:pointer;border-radius:8px;
+}
+#lineDetail .lstop:hover{background:rgba(193,154,61,.1)}
+#lineDetail .lstop .nd{flex:none;width:10px;height:10px;border-radius:50%;border:2.5px solid var(--lc);background:var(--paper)}
+#lineDetail .loopnote{font-size:11.5px;color:var(--gold-deep);margin-top:8px}
+body.dark #lineDetail .loopnote{color:var(--gold)}
+#lineDetail .closex{float:left;border:none;background:none;color:var(--ink-soft);font-size:16px}
+
+/* مساعدة */
+details.help{border:1px dashed var(--edge);border-radius:14px;padding:12px 14px;font-size:12.5px;color:var(--ink-soft);line-height:2}
+details.help summary{font-weight:700;color:var(--ink);cursor:pointer;font-size:13px}
+details.help code{background:rgba(193,154,61,.15);border-radius:5px;padding:1px 6px;font-size:11px;direction:ltr;display:inline-block}
+
+/* ── أدوات الخريطة العائمة ─────────────── */
+.maptools{
+  position:absolute;top:14px;left:14px;z-index:20;display:flex;flex-direction:column;gap:7px;
+}
+.mtool{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--edge);
+  background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;
+  box-shadow:var(--shadow);display:grid;place-items:center;transition:background .15s;
+}
+.mtool:hover{background:var(--canvas)}
+.maphint{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:15;
+  background:var(--paper);border:1px solid var(--edge);border-radius:99px;
+  padding:6px 16px;font-size:11.5px;color:var(--ink-soft);box-shadow:var(--shadow);
+  white-space:nowrap;pointer-events:none;opacity:.95;
+}
+.editbar{
+  position:absolute;top:14px;right:14px;z-index:20;display:none;align-items:center;gap:10px;
+  background:var(--paper);border:1.5px solid var(--gold);border-radius:13px;
+  padding:9px 14px;box-shadow:var(--shadow);font-size:12.5px;
+}
+#mapwrap.editing .editbar{display:flex}
+.editbar b{color:var(--gold-deep)}
+body.dark .editbar b{color:var(--gold)}
+.editbar button{
+  border:1px solid var(--edge);background:var(--canvas);color:var(--ink);
+  border-radius:8px;padding:5px 11px;font-size:12px;font-weight:600;
+}
+
+/* نافذة المحطة المنبثقة */
+.popup{
+  position:absolute;z-index:25;min-width:215px;max-width:270px;
+  background:var(--paper);border:1px solid var(--edge);border-radius:14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.22);padding:13px 14px;display:none;
+  animation:pop .25s ease;
+}
+.popup.open{display:block}
+.popup .pname{font-family:'Changa';font-weight:700;font-size:16px;margin-bottom:7px;padding-inline-end:18px}
+.popup .plines{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.popup .pline{display:flex;align-items:center;gap:7px;font-size:12px}
+.popup .pline .sw{width:18px;height:7px;border-radius:4px;flex:none}
+.popup .pbtns{display:flex;gap:7px}
+.popup .pbtns button{
+  flex:1;border:none;border-radius:9px;padding:8px 4px;font-size:12.5px;font-weight:700;
+}
+.popup .setA{background:var(--ink);color:var(--canvas)}
+.popup .setB{background:var(--gold);color:#211a08}
+.popup .px{position:absolute;top:8px;left:10px;border:none;background:none;color:var(--ink-soft);font-size:15px}
+
+/* نافذة تصدير البيانات */
+.modal-bg{position:fixed;inset:0;background:rgba(10,14,22,.55);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--paper);border-radius:18px;max-width:620px;width:100%;max-height:84vh;
+  display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.4);overflow:hidden;
+}
+.modal header{background:var(--head);color:#f0ede4;padding:14px 18px;font-family:'Changa';font-weight:700;font-size:17px;display:flex;align-items:center}
+.modal header button{margin-inline-start:auto;border:none;background:none;color:#f0ede4;font-size:19px}
+.modal .mbody{padding:16px 18px;overflow-y:auto;font-size:13px;line-height:2;color:var(--ink-soft)}
+.modal textarea{
+  width:100%;height:230px;direction:ltr;font-family:ui-monospace,Consolas,monospace;font-size:11px;
+  border:1px solid var(--edge);border-radius:10px;padding:10px;background:var(--canvas);color:var(--ink);
+  resize:vertical;white-space:pre;
+}
+.modal .mfoot{padding:12px 18px;border-top:1px solid var(--edge);display:flex;gap:10px}
+.modal .mfoot button{border:none;border-radius:10px;padding:9px 18px;font-weight:700;font-size:13.5px}
+.modal .copy{background:var(--gold);color:#211a08}
+.modal .mfoot .ok{display:none;color:var(--gold-deep);font-size:12.5px;align-self:center}
+
+/* ── عناصر SVG داخل الخريطة ─────────────── */
+#map text{font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;direction:rtl;user-select:none}
+#map .lbl{
+  font-size:14.5px;font-weight:600;fill:var(--ink);
+  paint-order:stroke;stroke:var(--halo);stroke-width:4.5px;stroke-linejoin:round;
+}
+#map .lbl.big{font-family:'Changa';font-size:21px;font-weight:700;stroke-width:5.5px}
+#map .run{fill:none;stroke-linecap:round;stroke-linejoin:round;transition:opacity .3s,stroke-width .3s}
+#map .run.dim{opacity:var(--dim)}
+#map .run.route{filter:drop-shadow(0 0 5px currentColor)}
+#map .stn{transition:opacity .3s}
+#map .stn circle{fill:var(--paper);stroke:var(--ink);cursor:pointer;transition:stroke .2s}
+#map .stn:hover circle{stroke:var(--gold)}
+#map .stn.dim{opacity:.16;pointer-events:none}
+#map .stn.sel circle{stroke:var(--gold)}
+#map text.dim{opacity:.12}
+#map .oneway{fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:.95}
+#map .oneway.dim{opacity:var(--dim)}
+#map .endpin text{stroke:none;fill:#fff;font-family:'Changa';font-weight:800}
+#mapwrap.editing .stn circle{cursor:move}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+
+
+/* ── مكوّنات لوحة الأدمن ─────────────────── */
+.viewer .admin-only{display:none!important}
+.adm-line{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.adm-line input[type=color]{width:36px;height:31px;border:1px solid var(--edge);border-radius:8px;background:none;padding:2px;cursor:pointer;flex:none}
+.adm-line .adm-name{flex:1;min-width:0;border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);border-radius:9px;padding:6px 9px;font-size:13px;outline:none}
+.adm-line .adm-name:focus{border-color:var(--gold)}
+.adm-line select{border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);border-radius:9px;padding:6px 4px;font-size:12px}
+.adm-line .adm-del{flex:none;width:29px;height:29px;border:1px solid var(--edge);border-radius:8px;background:none;color:#c0392b;font-weight:700;font-size:13px}
+.adm-line .adm-del:hover{background:rgba(192,57,43,.1)}
+.addline{width:100%;margin-top:4px;border:1.5px dashed var(--gold);background:rgba(193,154,61,.07);color:var(--gold-deep);border-radius:11px;padding:9px;font-weight:700;font-size:13.5px}
+.addline:hover{background:rgba(193,154,61,.15)}
+body.dark .addline{color:var(--gold)}
+.adm-hint{font-size:11.5px;color:var(--ink-soft);margin-top:9px;line-height:1.9}
+.drawbar{
+  position:absolute;top:14px;right:14px;z-index:22;display:none;flex-wrap:wrap;align-items:center;gap:9px;
+  background:var(--paper);border:1.5px solid var(--gold);border-radius:13px;
+  padding:9px 14px;box-shadow:var(--shadow);font-size:12.5px;
+  max-width:min(500px,calc(100% - 90px));
+}
+.drawbar.show{display:flex}
+.drawbar b{color:var(--gold-deep)}
+body.dark .drawbar b{color:var(--gold)}
+.drawbar button{border:1px solid var(--edge);background:var(--canvas);color:var(--ink);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:600}
+.drawbar .ok{background:var(--gold);border-color:var(--gold);color:#211a08}
+.drawbar label{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-soft);cursor:pointer}
+.dchips{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+.dchips .pchip{border:1px solid var(--edge);background:var(--canvas);border-radius:99px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--ink);cursor:pointer}
+.dchips .pchip.on{background:var(--gold);border-color:var(--gold);color:#211a08}
+.dlast{font-size:11px;color:var(--ink-soft);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm-line .adm-edit{flex:none;width:29px;height:29px;border:1px solid var(--edge);border-radius:8px;background:none;color:var(--ink);font-size:13px}
+.adm-line .adm-edit:hover{background:rgba(193,154,61,.15);color:var(--gold-deep)}
+body.dark .adm-line .adm-edit:hover{color:var(--gold)}
+.editbar button.on{background:var(--gold);border-color:var(--gold);color:#211a08}
+#mapwrap.placing svg#map{cursor:crosshair}
+.toast{
+  position:absolute;bottom:54px;left:50%;transform:translateX(-50%) translateY(8px);z-index:40;
+  background:var(--head);color:#f0ede4;border-radius:11px;padding:9px 18px;font-size:12.5px;
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+  max-width:84%;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.rn-lines{display:flex;flex-direction:column;gap:4px;max-height:170px;overflow-y:auto;border:1px solid var(--edge);border-radius:10px;padding:7px;background:var(--canvas)}
+.rn-line{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.rn-line .sw{width:18px;height:7px;border-radius:4px;flex:none}
+.rn-line .rn-ln{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rn-line button{border:1px solid var(--edge);background:var(--paper);color:var(--ink);border-radius:7px;padding:3px 12px;font-size:11px;font-weight:700;cursor:pointer}
+.rn-line button.link{border-color:var(--gold);color:var(--gold-deep)}
+body.dark .rn-line button.link{color:var(--gold)}
+.rn-line button.unlink{color:#c0392b;border-color:rgba(192,57,43,.45)}
+.dropdown .opt .nolink{font-size:10px;color:var(--ink-soft);margin-inline-start:auto;border:1px dashed var(--edge);border-radius:99px;padding:1px 7px}
+#map .runhit{pointer-events:stroke;cursor:pointer;fill:none}
+#linePopup .pbtns{flex-direction:column}
+#linePopup .pbtns button{background:var(--canvas);color:var(--ink);border:1px solid var(--edge);text-align:start;padding:8px 12px;font-weight:600}
+#linePopup .pbtns button:hover{border-color:var(--gold)}
+#linePopup .pbtns .lp-ins{background:var(--gold);color:#211a08;border-color:var(--gold);font-weight:700}
+#linePopup .pbtns .lp-del{color:#c0392b}
+#linePopup .lp-type{font-size:11px;color:var(--ink-soft);font-family:'IBM Plex Sans Arabic';font-weight:400}
+#linePopup .lp-edit{display:flex;gap:6px;margin-bottom:10px;align-items:center}
+#linePopup .lp-edit input[type=color]{width:34px;height:30px;border:1px solid var(--edge);border-radius:8px;background:none;padding:2px;cursor:pointer;flex:none}
+#linePopup .lp-edit input[type=text]{flex:1;min-width:0;border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);border-radius:9px;padding:6px 9px;font-size:13px;outline:none;font-family:inherit}
+#linePopup .lp-edit input[type=text]:focus{border-color:var(--gold)}
+#linePopup .lp-edit select{border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);border-radius:9px;padding:6px 4px;font-size:12px;font-family:inherit}
+.modal.small{max-width:400px}
+.modal .fld{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.modal .fld label{font-size:12.5px;font-weight:600;color:var(--ink)}
+.modal .fld input,.modal .fld select{
+  border:1.5px solid var(--edge);background:var(--canvas);color:var(--ink);
+  border-radius:10px;padding:9px 11px;font-size:14px;outline:none;font-family:inherit;
+}
+.modal .fld input:focus{border-color:var(--gold)}
+.modal .fnote{font-size:11.5px;color:var(--ink-soft);line-height:1.8}
+.pub-note{background:rgba(193,154,61,.1);border:1px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.9;margin-bottom:12px;color:var(--ink)}
+
+/* ── الجوال ─────────────────────────────── */
+@media (max-width:920px){
+  body{overflow:auto}
+  main{flex-direction:column}
+  #mapwrap{height:62vh;flex:none;border-bottom:1px solid var(--edge)}
+  aside.panel{width:100%;border-inline-start:none;overflow:visible}
+  header.app{padding:10px 14px 12px}
+  .stats{display:none}
+  .hbtn span{display:none}
+  .maphint{display:none}
+}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>خريطة النقل الداخلي لحلب — دليل تفاعلي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script type="module" src="/src/main.js"></script>
+</head>
+<body>
+<header class="app">
+  <div class="brand">
+    <!-- صورة رمزية لقلعة حلب -->
+    <svg class="citadel" viewBox="0 0 60 50" fill="currentColor" aria-hidden="true">
+      <path d="M4 46 L8 30 Q30 22 52 30 L56 46 Z" opacity=".55"/>
+      <path d="M22 30 V18 h3 v-4 h3 v4 h4 v-4 h3 v4 h3 V30 Z"/>
+      <rect x="28.6" y="23" width="3" height="7" fill="var(--head)" opacity=".9"/>
+      <path d="M2 46 h56 v3 H2 Z"/>
+    </svg>
+    <div>
+      <h1>خريطة النقل الداخلي لحلب <small>دليل تفاعلي لخطوط المواصلات داخل المدينة</small></h1>
+    </div>
+  </div>
+  <span class="devchip">نسخة قيد التطوير</span>
+  <div class="spacer"></div>
+  <div class="stats" id="stats"></div>
+  <div class="hbtns">
+    <button class="hbtn" id="themeBtn" title="الوضع الليلي">🌙 <span>ليلي</span></button>
+    <button class="hbtn admin-only" id="undoBtn" title="تراجع عن آخر تعديل (Ctrl+Z)" disabled>↶ <span>تراجع</span></button>
+    <button class="hbtn admin-only" id="redoBtn" title="إعادة التعديل (Ctrl+Y)" disabled>↷ <span>إعادة</span></button>
+    <button class="hbtn admin-only" id="editBtn" title="وضع تعديل الخريطة">✎ <span>تعديل الخريطة</span></button>
+    <button class="hbtn admin-only" id="pubBtn" title="تصدير نسخة جاهزة للنشر">⬇ <span>تصدير للنشر</span></button>
+  </div>
+</header>
+
+<main>
+  <div id="mapwrap">
+    <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+
+    <div class="maptools">
+      <button class="mtool" id="zin"  title="تقريب">＋</button>
+      <button class="mtool" id="zout" title="تبعيد">－</button>
+      <button class="mtool" id="zfit" title="ملاءمة الشاشة" style="font-size:14px">⛶</button>
+    </div>
+
+    <div class="editbar admin-only">
+      <span><b>وضع التعديل:</b> اسحب محطة لنقلها · انقرها لتسميتها أو حذفها · نقرة مزدوجة على الفراغ = محطة جديدة</span>
+      <button id="addLineBtn">＋ خط جديد</button>
+      <button id="placeBtn">＋ محطة جديدة</button>
+      <button id="exportBtn">نسخ الإحداثيات</button>
+    </div>
+
+    <div class="drawbar admin-only" id="drawbar">
+      <span id="drawTitle"></span>
+      <span class="dchips" id="drawPaths"></span>
+      <b id="drawCount">(0)</b>
+      <span class="dlast" id="drawLast"></span>
+      <button id="drawUndo">↩ تراجع</button>
+      <label><input type="checkbox" id="drawOneWay"> اتجاه واحد</label>
+      <button class="ok" id="drawDone">✓ حفظ</button>
+      <button id="drawCancel">✕ إلغاء</button>
+    </div>
+
+    <div class="maphint">اسحب للتنقّل · عجلة الفأرة للتقريب · انقر على أي محطة</div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="popup" id="popup">
+      <button class="px" id="popupX">✕</button>
+      <div class="pname" id="popName"></div>
+      <div class="plines" id="popLines"></div>
+      <div class="pbtns">
+        <button class="setA" id="popA">انطلاق من هنا</button>
+        <button class="setB" id="popB">الوصول إلى هنا</button>
+      </div>
+    </div>
+
+    <div class="popup" id="linePopup">
+      <button class="px" id="lpX">✕</button>
+      <div class="pname" id="lpName"></div>
+      <div class="lp-edit admin-only">
+        <input type="color" id="lpColor" title="لون الخط">
+        <input type="text" id="lpRename" placeholder="اسم الخط" title="اسم الخط">
+        <select id="lpType" title="نوع الخط"><option>باص</option><option>سرفيس</option></select>
+      </div>
+      <div class="pbtns">
+        <button class="lp-ins" id="lpInsert">＋ إدراج محطة على هذا المقطع</button>
+        <button id="lpFocus">🔍 تركيز الخط وعرض محطاته</button>
+        <button id="lpEdit">✎ تعديل المسار</button>
+        <button class="lp-del" id="lpDelete">✕ حذف الخط</button>
+      </div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <section class="card">
+      <h2>مخطّط الرحلة <span class="rule"></span></h2>
+      <div class="field">
+        <span class="pt a">أ</span>
+        <input id="fromIn" placeholder="محطة الانطلاق…" autocomplete="off">
+        <div class="dropdown" id="fromDD"></div>
+      </div>
+      <div class="swaprow"><button class="swap" id="swapBtn" title="تبديل الاتجاه">⇅</button></div>
+      <div class="field">
+        <span class="pt b">ب</span>
+        <input id="toIn" placeholder="محطة الوصول…" autocomplete="off">
+        <div class="dropdown" id="toDD"></div>
+      </div>
+      <button class="gobtn" id="goBtn">اعثر على الطريق</button>
+      <button class="clearbtn" id="clearBtn">مسح الرحلة وإظهار كل الخطوط</button>
+    </section>
+
+    <section id="result"></section>
+
+    <section class="card">
+      <h2 style="margin-bottom:10px">خطوط الشبكة
+        <div class="seg" id="typeSeg">
+          <button data-t="all" class="on">الكل</button>
+          <button data-t="باص">باص</button>
+          <button data-t="سرفيس">سرفيس</button>
+        </div>
+      </h2>
+      <div class="lines-list" id="linesList"></div>
+    </section>
+
+    <section id="lineDetail"></section>
+    </aside>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <header>تصدير بيانات الخريطة <button id="modalX">✕</button></header>
+    <div class="mbody">
+      <p>هذه إحداثيات المحطات بعد تعديلاتك. انسخها واستبدل بها قسم <b>stations</b>
+      داخل كتلة <b>MAP_DATA</b> في ملف الصفحة، ثم احفظ الملف:</p>
+      <textarea id="exportTA" readonly spellcheck="false"></textarea>
+    </div>
+    <div class="mfoot">
+      <button class="copy" id="copyBtn">نسخ إلى الحافظة</button>
+      <span class="ok" id="copyOk">✓ تم النسخ</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="renameBg">
+  <div class="modal small">
+    <header>تعديل المحطة <button id="rnX">✕</button></header>
+    <div class="mbody">
+      <div class="fld">
+        <label>اسم المحطة</label>
+        <input id="rnName" autocomplete="off">
+        <span class="fnote">يمكنك كسر الاسم لسطرين بوضع | في منتصفه، مثل: دوار|المالية</span>
+      </div>
+      <div class="fld">
+        <label>ربط المحطة بالخطوط</label>
+        <div class="rn-lines" id="rnLines"></div>
+        <span class="fnote">«ربط» يُدرج المحطة تلقائيًا في أنسب موضع على مسار الخط
+        فتظهر فورًا في نتائج البحث ورحلاته، و«فصل» يزيلها منه ويصل المسار بين جارتيها.</span>
+      </div>
+      <div class="fld">
+        <label>مكان الاسم حول المحطة</label>
+        <select id="rnPos">
+          <option value="keep">إبقاء الوضع الحالي</option>
+          <option value="T">فوق المحطة</option>
+          <option value="B">تحت المحطة</option>
+          <option value="R">يمين المحطة</option>
+          <option value="L">يسار المحطة</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="copy" id="rnSave">حفظ التعديل</button>
+      <button id="rnCancel" style="background:var(--canvas);color:var(--ink);border:1px solid var(--edge)">إلغاء</button>
+      <button id="rnDelete" style="background:none;color:#c0392b;border:1px solid #c0392b;margin-inline-start:auto">🗑 حذف المحطة</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="pubBg">
+  <div class="modal">
+    <header>تصدير نسخة للنشر <button id="pubX">✕</button></header>
+    <div class="mbody">
+      <div class="pub-note">
+        🌐 سيُولَّد <b>ملف HTML واحد مستقل</b> يضم آخر نسخة من الخريطة + جهاز البحث عن الطرق،
+        <b>من دون أي أدوات تعديل</b>. ارفعه كما هو على أي استضافة
+        (GitHub Pages، Netlify، موقعك الخاص…) أو ضمّنه داخل صفحة بوسم iframe.
+      </div>
+      <textarea id="pubTA" readonly spellcheck="false"></textarea>
+      <p id="pubSize" style="margin-top:8px;font-size:12px"></p>
+    </div>
+    <div class="mfoot">
+      <button class="copy" id="pubDownload">⬇ تنزيل الملف</button>
+      <button class="copy" id="pubCopy" style="background:var(--canvas);color:var(--ink);border:1px solid var(--edge)">نسخ الكود</button>
+      <span class="ok" id="pubOk">✓ تم</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
