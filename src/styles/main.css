@@ -394,6 +394,17 @@ body.dark .rn-line button.link{color:var(--gold)}
 .modal .fnote{font-size:11.5px;color:var(--ink-soft);line-height:1.8}
 .pub-note{background:rgba(193,154,61,.1);border:1px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.9;margin-bottom:12px;color:var(--ink)}
 
+/* ── بطاقة التعريف ──────────────────────── */
+.credits{
+  margin-top:auto;
+  display:flex;align-items:flex-start;gap:9px;
+  border:1px dashed var(--edge);border-radius:14px;
+  padding:11px 14px;
+  font-size:12px;color:var(--ink-soft);line-height:2;
+}
+.credits .cicon{flex:none;color:var(--gold);font-size:13px;line-height:2}
+.credits p{margin:0}
+
 /* ── الجوال ─────────────────────────────── */
 @media (max-width:920px){
   body{overflow:auto}
